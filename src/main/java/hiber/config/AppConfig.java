@@ -34,6 +34,7 @@ public class AppConfig {
       dataSource.setUrl(env.getProperty("db.url"));
       dataSource.setUsername(env.getProperty("db.username"));
       dataSource.setPassword(env.getProperty("db.password"));
+
       return dataSource;
    }
 
@@ -43,10 +44,11 @@ public class AppConfig {
       factoryBean.setDataSource(getDataSource());
       
       Properties props = new Properties();
-      //props.setProperty("hibernate.generate_statistics", "true");
+      props.put("hibernate.generate_statistics", env.getProperty("hibernate.generate_statistics"));
       props.put("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
       props.put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
       props.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+      props.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
 
       factoryBean.setHibernateProperties(props);
       factoryBean.setAnnotatedClasses(User.class, Car.class);

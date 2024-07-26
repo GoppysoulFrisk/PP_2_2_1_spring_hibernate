@@ -13,7 +13,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "сars")
-public class Car {
+public class Car{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +25,7 @@ public class Car {
     @Column(name = "series")
     private int series;
 
-    @OneToOne (cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @OneToOne (mappedBy = "userCar", cascade = CascadeType.ALL)
     private User user;
 
     public Car() {
