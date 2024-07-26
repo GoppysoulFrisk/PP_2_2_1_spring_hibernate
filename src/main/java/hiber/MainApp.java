@@ -51,8 +51,7 @@ public class MainApp {
       for (User useroflist : userslist) {
          System.out.println(useroflist.toString());
       }
-
-        System.out.println(service.getUserByCar("одинадцатка", 145));
+        System.out.println(service.getUserByCar("одинадцадка", 145));
         context.close();
     }
 }
