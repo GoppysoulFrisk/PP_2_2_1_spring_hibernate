@@ -7,7 +7,6 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 import java.util.HashSet;
@@ -19,8 +18,12 @@ import java.util.Set;
 @Component
 public class UserDaoImp implements UserDao {
 
+   private final SessionFactory sessionFactory;
+
    @Autowired
-   private SessionFactory sessionFactory;
+   public UserDaoImp(SessionFactory sessionFactory) {
+      this.sessionFactory = sessionFactory;
+   }
 
    @Override
    public void add(User user) {
@@ -30,25 +33,25 @@ public class UserDaoImp implements UserDao {
    @Override
    @SuppressWarnings("unchecked")
    public List<User> listUsers() {
-      TypedQuery<User> query = sessionFactory.getCurrentSession().createQuery("from User");
+      TypedQuery<User> query = sessionFactory.getCurrentSession().createQuery("SELECT u FROM User u JOIN FETCH u.userCar", User.class);
       return query.getResultList();
    }
 
    @Override
-   @Transactional(readOnly = true) //без него Could not obtain transaction-sinchronized Session for current thread
+//   @Transactional(readOnly = true) //без него Could not obtain transaction-sinchronized Session for current thread
    public Optional<Set<User>> getUserByCar(String model, int series) {
-      Session session;
-      try {
-         session = sessionFactory.getCurrentSession();
+      Set<User> usersSet = new HashSet<>();
+      try (Session session = sessionFactory.openSession()) {
+         usersSet.addAll(session.createQuery(
+                         "SELECT DISTINCT u FROM User u JOIN u.userCar c WHERE c.model = :model AND c.series = :series", User.class)
+                 .setParameter("model", model)
+                 .setParameter("series", series)
+                 .getResultList());
       } catch (HibernateException e) {
-         session = sessionFactory.openSession();
+         e.printStackTrace(); // Логируем ошибку для отладки
       }
-      Set<User> usersSet = new HashSet<>(sessionFactory.getCurrentSession()
-              .createQuery("SELECT u FROM User u JOIN u.userCar c WHERE c.model = :model AND c.series = :series", User.class)
-              .setParameter("model", model)
-              .setParameter("series", series)
-              .getResultList());
       return usersSet.isEmpty() ? Optional.empty() : Optional.of(usersSet);
+
       //N+1
       //SQL: A LEFT JOIN B -> Результирующая объединенная таблица
    }
